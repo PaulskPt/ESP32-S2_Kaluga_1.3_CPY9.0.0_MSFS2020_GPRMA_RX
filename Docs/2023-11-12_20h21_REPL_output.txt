@@ -1,0 +1,217 @@
+Sunday 2023-11-12  20h21 utc
+
+Board: Espressif ESP32-S2 Kaluga-1.3
+
+Circuitpython V9.0.0-alpha.2
+
+IDE: mu-editor V2.1.0
+
+REPL Output:
+
+MSFS 2020
+GPS data RX
+
+CircuitPython MSFS2020 GPS sentences data reception decoder by @paulsk (Discord.com Adafruit/CiruitPython). 
+main():                 displayio test in Circuitpython V9.0.0-alpha.2
+main():                 board: 'espressif_kaluga_1.3'
+
+MSFS2020 and FSUIPC7 (GPSout2) GPS data sentences sent from desktop PC Paul1 via com17
+to an Espressif ESP32-S2 Kaluga-1 microcontroller board, UART TXd (board.IO43) - RXd (board.IO44) data PINs.
+Starting to read the GPS data sentences:
+
+loop():                 Outer loop count value: 1
+
+Start of loop 1
+........................
+
+ck_uart():              state.lMsgOK: True
+ck_variant():           GPRMA msg extracted: '$GPRMA,A,5050.1558,N,00017.4051,W,0.0,0.0,0.1,243.4,0.4,E*6D'
+pr_fs_data():           state.text1[0]: LAT, s0:  50.50'1558" N
+pr_fs_data():           state.lat_lbl.text: LAT  50.50'1558" N
+pr_fs_data():           state.text1[1]: LON, s1: 000.17'4051" W
+pr_fs_data():           state.lon_lbl.text: LON 000.17'4051" W
+pr_fs_data():           state.text1[2]: GS       KTS, s2:   0
+pr_fs_data():           state.gs_lbl.text: GS    0 KTS
+pr_fs_data():           state.text1[3]: CRS      DEGS, s3: 243
+pr_fs_data():           state.crs_lbl.text: CRS 243 DEGS
+
+
+End of loop 1
+loop():                 Outer loop count value: 2
+
+Start of loop 2
+........................
+
+ck_uart():              state.lMsgOK: True
+ck_variant():           GPRMA msg extracted: '$GPRMA,A,5050.1558,N,00017.4051,W,0.0,0.0,0.0,243.4,0.4,E*6C'
+pr_fs_data():           state.text1[0]: LAT, s0:  50.50'1558" N
+pr_fs_data():           state.lat_lbl.text: LAT  50.50'1558" N
+pr_fs_data():           state.text1[1]: LON, s1: 000.17'4051" W
+pr_fs_data():           state.lon_lbl.text: LON 000.17'4051" W
+pr_fs_data():           state.text1[2]: GS       KTS, s2:   0
+pr_fs_data():           state.gs_lbl.text: GS    0 KTS
+pr_fs_data():           state.text1[3]: CRS      DEGS, s3: 243
+pr_fs_data():           state.crs_lbl.text: CRS 243 DEGS
+
+
+End of loop 2
+loop():                 Outer loop count value: 3
+
+Start of loop 3
+........................
+
+ck_uart():              state.lMsgOK: True
+ck_variant():           GPRMA msg extracted: '$GPRMA,A,5050.1558,N,00017.4051,W,0.0,0.0,0.0,243.4,0.4,E*6C'
+pr_fs_data():           state.text1[0]: LAT, s0:  50.50'1558" N
+pr_fs_data():           state.lat_lbl.text: LAT  50.50'1558" N
+pr_fs_data():           state.text1[1]: LON, s1: 000.17'4051" W
+pr_fs_data():           state.lon_lbl.text: LON 000.17'4051" W
+pr_fs_data():           state.text1[2]: GS       KTS, s2:   0
+pr_fs_data():           state.gs_lbl.text: GS    0 KTS
+pr_fs_data():           state.text1[3]: CRS      DEGS, s3: 243
+pr_fs_data():           state.crs_lbl.text: CRS 243 DEGS
+
+
+End of loop 3
+loop():                 Outer loop count value: 4
+
+Start of loop 4
+........................
+
+ck_uart():              state.lMsgOK: True
+ck_variant():           GPRMA msg extracted: '$GPRMA,A,5050.1558,N,00017.4051,W,0.0,0.0,0.0,243.4,0.4,E*6C'
+pr_fs_data():           state.text1[0]: LAT, s0:  50.50'1558" N
+pr_fs_data():           state.lat_lbl.text: LAT  50.50'1558" N
+pr_fs_data():           state.text1[1]: LON, s1: 000.17'4051" W
+pr_fs_data():           state.lon_lbl.text: LON 000.17'4051" W
+pr_fs_data():           state.text1[2]: GS       KTS, s2:   0
+pr_fs_data():           state.gs_lbl.text: GS    0 KTS
+pr_fs_data():           state.text1[3]: CRS      DEGS, s3: 243
+pr_fs_data():           state.crs_lbl.text: CRS 243 DEGS
+
+
+End of loop 4
+loop():                 Outer loop count value: 5
+
+Start of loop 5
+........................
+
+ck_uart():              state.lMsgOK: True
+ck_variant():           GPRMA msg extracted: '$GPRMA,A,5050.1558,N,00017.4051,W,0.0,0.0,0.0,243.4,0.4,E*6C'
+pr_fs_data():           state.text1[0]: LAT, s0:  50.50'1558" N
+pr_fs_data():           state.lat_lbl.text: LAT  50.50'1558" N
+pr_fs_data():           state.text1[1]: LON, s1: 000.17'4051" W
+pr_fs_data():           state.lon_lbl.text: LON 000.17'4051" W
+pr_fs_data():           state.text1[2]: GS       KTS, s2:   0
+pr_fs_data():           state.gs_lbl.text: GS    0 KTS
+pr_fs_data():           state.text1[3]: CRS      DEGS, s3: 243
+pr_fs_data():           state.crs_lbl.text: CRS 243 DEGS
+
+
+End of loop 5
+loop():                 Outer loop count value: 6
+
+Start of loop 6
+........................
+
+ck_uart():              state.lMsgOK: True
+ck_variant():           GPRMA msg extracted: '$GPRMA,A,5050.1558,N,00017.4051,W,0.0,0.0,0.0,243.4,0.4,E*6C'
+pr_fs_data():           state.text1[0]: LAT, s0:  50.50'1558" N
+pr_fs_data():           state.lat_lbl.text: LAT  50.50'1558" N
+pr_fs_data():           state.text1[1]: LON, s1: 000.17'4051" W
+pr_fs_data():           state.lon_lbl.text: LON 000.17'4051" W
+pr_fs_data():           state.text1[2]: GS       KTS, s2:   0
+pr_fs_data():           state.gs_lbl.text: GS    0 KTS
+pr_fs_data():           state.text1[3]: CRS      DEGS, s3: 243
+pr_fs_data():           state.crs_lbl.text: CRS 243 DEGS
+
+
+End of loop 6
+loop():                 Outer loop count value: 7
+
+Start of loop 7
+........................
+
+ck_uart():              state.lMsgOK: True
+ck_variant():           GPRMA msg extracted: '$GPRMA,A,5050.1558,N,00017.4051,W,0.0,0.0,0.0,243.4,0.4,E*6C'
+pr_fs_data():           state.text1[0]: LAT, s0:  50.50'1558" N
+pr_fs_data():           state.lat_lbl.text: LAT  50.50'1558" N
+pr_fs_data():           state.text1[1]: LON, s1: 000.17'4051" W
+pr_fs_data():           state.lon_lbl.text: LON 000.17'4051" W
+pr_fs_data():           state.text1[2]: GS       KTS, s2:   0
+pr_fs_data():           state.gs_lbl.text: GS    0 KTS
+pr_fs_data():           state.text1[3]: CRS      DEGS, s3: 243
+pr_fs_data():           state.crs_lbl.text: CRS 243 DEGS
+
+
+End of loop 7
+loop():                 Outer loop count value: 8
+
+Start of loop 8
+........................
+
+ck_uart():              state.lMsgOK: True
+ck_variant():           GPRMA msg extracted: '$GPRMA,A,5050.1558,N,00017.4051,W,0.0,0.0,0.0,243.4,0.4,E*6C'
+pr_fs_data():           state.text1[0]: LAT, s0:  50.50'1558" N
+pr_fs_data():           state.lat_lbl.text: LAT  50.50'1558" N
+pr_fs_data():           state.text1[1]: LON, s1: 000.17'4051" W
+pr_fs_data():           state.lon_lbl.text: LON 000.17'4051" W
+pr_fs_data():           state.text1[2]: GS       KTS, s2:   0
+pr_fs_data():           state.gs_lbl.text: GS    0 KTS
+pr_fs_data():           state.text1[3]: CRS      DEGS, s3: 243
+pr_fs_data():           state.crs_lbl.text: CRS 243 DEGS
+
+
+End of loop 8
+loop():                 Outer loop count value: 9
+
+Start of loop 9
+........................
+
+ck_uart():              state.lMsgOK: True
+ck_variant():           GPRMA msg extracted: '$GPRMA,A,5050.1558,N,00017.4051,W,0.0,0.0,0.0,243.4,0.4,E*6C'
+pr_fs_data():           state.text1[0]: LAT, s0:  50.50'1558" N
+pr_fs_data():           state.lat_lbl.text: LAT  50.50'1558" N
+pr_fs_data():           state.text1[1]: LON, s1: 000.17'4051" W
+pr_fs_data():           state.lon_lbl.text: LON 000.17'4051" W
+pr_fs_data():           state.text1[2]: GS       KTS, s2:   0
+pr_fs_data():           state.gs_lbl.text: GS    0 KTS
+pr_fs_data():           state.text1[3]: CRS      DEGS, s3: 243
+pr_fs_data():           state.crs_lbl.text: CRS 243 DEGS
+
+
+End of loop 9
+loop():                 Outer loop count value: 10
+
+Start of loop 10
+........................
+
+ck_uart():              state.lMsgOK: True
+ck_variant():           GPRMA msg extracted: '$GPRMA,A,5050.1558,N,00017.4051,W,0.0,0.0,0.0,243.4,0.4,E*6C'
+pr_fs_data():           state.text1[0]: LAT, s0:  50.50'1558" N
+pr_fs_data():           state.lat_lbl.text: LAT  50.50'1558" N
+pr_fs_data():           state.text1[1]: LON, s1: 000.17'4051" W
+pr_fs_data():           state.lon_lbl.text: LON 000.17'4051" W
+pr_fs_data():           state.text1[2]: GS       KTS, s2:   0
+pr_fs_data():           state.gs_lbl.text: GS    0 KTS
+pr_fs_data():           state.text1[3]: CRS      DEGS, s3: 243
+pr_fs_data():           state.crs_lbl.text: CRS 243 DEGS
+
+
+End of loop 10
+loop():                 Outer loop count value: 11
+
+Start of loop 11
+........................
+
+Traceback (most recent call last):
+  File "code.py", line 2507, in <module>
+  File "code.py", line 2482, in main
+  File "code.py", line 955, in loop
+  File "code.py", line 1255, in ck_uart
+KeyboardInterrupt: 
+
+Code done running.
+Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.
+
+Press any key to enter the REPL. Use CTRL-D to reload.

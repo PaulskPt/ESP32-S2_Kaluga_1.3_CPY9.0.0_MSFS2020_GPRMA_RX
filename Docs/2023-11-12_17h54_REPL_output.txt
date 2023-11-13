@@ -1,0 +1,119 @@
+Sunday 2023-11-12  17h54 utc
+
+Board: Espressif ESP32-S2 Kaluga-1.3
+
+Circuitpython V9.0.0-alpha.2
+
+IDE: mu-editor V2.1.0
+
+REPL Output:
+
+setup():                state.my_gprmx: {'': ''}
+setup_GPS_main_dict(): contents of state.GPSvariantDict:
+{'GPRMA': {'ID': '$GPRMA', 'type': 'RMA', 'fields': 12, 'descr': ''}, '': {}}
+csv_read():             type(line): <class 'str'>, line: ((id,0),(stat,1),(lat,2),(lat_ns,3),(lon,4),(lon_ew,5),(dummy,6),(dummy2,7),(gs,8),(crs,9),(var,10),(var_ew,11),(cksum,12),)
+
+csv_read():              this list of tuples: ((id,0),(stat,1),(lat,2),(lat_ns,3),(lon,4),(lon_ew,5),(dummy,6),(dummy2,7),(gs,8),(crs,9),(var,10),(var_ew,11),(cksum,12),)
+ is imported from file: 'gprma2.csv'
+
+conv_it():              s: ((id,0),(stat,1),(lat,2),(lat_ns,3),(lon,4),(lon_ew,5),(dummy,6),(dummy2,7),(gs,8),(crs,9),(var,10),(var_ew,11),(cksum,12),)
+
+cnt_occurrances():      nr of occurrances of '),(' in param s: 12
+cnt_occurrances():      s: ((id,0),(stat,1),(lat,2),(lat_ns,3),(lon,4),(lon_ew,5),(dummy,6),(dummy2,7),(gs,8),(crs,9),(var,10),(var_ew,11),(cksum,12),)
+
+cnt_occurrances():      occurrance found and checked: 12
+conv_it():              s: ((id,0),(stat,1),(lat,2),(lat_ns,3),(lon,4),(lon_ew,5),(dummy,6),(dummy2,7),(gs,8),(crs,9),(var,10),(var_ew,11),(cksum,12),)
+
+conv_it():              occ_lst: [7, 16, 24, 35, 43, 54, 64, 75, 82, 90, 99, 111]
+conv_it():              idx: 7
+conv_it():              _: 0
+conv_it():              start: 1, end: 7
+conv_it():              substr to search: '(id,0)'
+conv_it_sub():          k: '0', v: 'id'
+conv_it_sub():          nk: 0
+conv_it():              idx: 16
+conv_it():              _: 1
+conv_it():              start: 8, end: 16
+conv_it():              substr to search: '(stat,1)'
+conv_it_sub():          k: '1', v: 'stat'
+conv_it_sub():          nk: 1
+conv_it():              idx: 24
+conv_it():              _: 2
+conv_it():              start: 17, end: 24
+conv_it():              substr to search: '(lat,2)'
+conv_it_sub():          k: '2', v: 'lat'
+conv_it_sub():          nk: 2
+conv_it():              idx: 35
+conv_it():              _: 3
+conv_it():              start: 25, end: 35
+conv_it():              substr to search: '(lat_ns,3)'
+conv_it_sub():          k: '3', v: 'lat_ns'
+conv_it_sub():          nk: 3
+conv_it():              idx: 43
+conv_it():              _: 4
+conv_it():              start: 36, end: 43
+conv_it():              substr to search: '(lon,4)'
+conv_it_sub():          k: '4', v: 'lon'
+conv_it_sub():          nk: 4
+conv_it():              idx: 54
+conv_it():              _: 5
+conv_it():              start: 44, end: 54
+conv_it():              substr to search: '(lon_ew,5)'
+conv_it_sub():          k: '5', v: 'lon_ew'
+conv_it_sub():          nk: 5
+conv_it():              idx: 64
+conv_it():              _: 6
+conv_it():              start: 55, end: 64
+conv_it():              substr to search: '(dummy,6)'
+conv_it_sub():          k: '6', v: 'dummy'
+conv_it_sub():          nk: 6
+conv_it():              idx: 75
+conv_it():              _: 7
+conv_it():              start: 65, end: 75
+conv_it():              substr to search: '(dummy2,7)'
+conv_it_sub():          k: '7', v: 'dummy2'
+conv_it_sub():          nk: 7
+conv_it():              idx: 82
+conv_it():              _: 8
+conv_it():              start: 76, end: 82
+conv_it():              substr to search: '(gs,8)'
+conv_it_sub():          k: '8', v: 'gs'
+conv_it_sub():          nk: 8
+conv_it():              idx: 90
+conv_it():              _: 9
+conv_it():              start: 83, end: 90
+conv_it():              substr to search: '(crs,9)'
+conv_it_sub():          k: '9', v: 'crs'
+conv_it_sub():          nk: 9
+conv_it():              idx: 99
+conv_it():              _: 10
+conv_it():              start: 91, end: 99
+conv_it():              substr to search: '(var,10)'
+conv_it_sub():          k: '10', v: 'var'
+conv_it_sub():          nk: 10
+conv_it():              idx: 111
+conv_it():              _: 11
+conv_it():              start: 100, end: 111
+conv_it():              substr to search: '(var_ew,11)'
+conv_it_sub():          k: '11', v: 'var_ew'
+conv_it_sub():          nk: 11
+conv_it():              _: 11
+conv_it():              start: 112, end: 122
+conv_it():              substr to search: '(cksum,12)'
+conv_it_sub():          k: '12', v: 'cksum'
+conv_it_sub():          nk: 12
+conv_it():              tmp_dict: {0: 'id', 1: 'stat', 2: 'lat', 3: 'lat_ns', 4: 'lon', 5: 'lon_ew', 6: 'dummy', 7: 'dummy2', 8: 'gs', 9: 'crs', 10: 'var', 11: 'var_ew', 12: 'cksum'}
+MSFS 2020
+GPS data RX
+Traceback (most recent call last):
+  File "code.py", line 2544, in <module>
+  File "code.py", line 2507, in main
+  File "code.py", line 2464, in setup
+KeyboardInterrupt: 
+
+Code done running.
+Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.
+
+Press any key to enter the REPL. Use CTRL-D to reload.
+
+Adafruit CircuitPython 9.0.0-alpha.2 on 2023-10-27; Kaluga 1 with ESP32S2

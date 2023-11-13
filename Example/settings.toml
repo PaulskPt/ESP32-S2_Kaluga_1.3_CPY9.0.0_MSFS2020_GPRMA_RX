@@ -1,0 +1,8 @@
+CIRCUITPY_WIFI_SSID = "<Your_SSID>"
+CIRCUITPY_WIFI_PASSWORD = "<Your WiFi password>"
+TIMEZONE = 'Europe/Lisbon'
+TZ_OFFSET = '1'
+DEBUG_FLAG = "0"
+LOCAL_TIME_FLAG = '1'
+NTP_LOCAL_FLAG =  '1',
+NTP_LOCAL_URL = 'pt.pool.ntp.org'

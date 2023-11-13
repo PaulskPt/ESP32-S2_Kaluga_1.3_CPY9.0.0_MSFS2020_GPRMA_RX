@@ -1,0 +1,13 @@
+ID, type, nr_of_fields, descr
+'$GPRMA','RMA',13, 'recommended LORAN data'
+'$GPRMC','RMC',12'position, velocity and time'
+'$GPVTG','VTG',10,'Speed over ground and tracking offset.
+'$GPGGA','GGA',16, 'a basic GPS NMEA message'
+'$GPGLL','GLL',8, 'position data: position fix, time of position fix and status'
+'$GPGSA','GSA',19,'Detailed GPS DOP and detailed satellite tracking information'
+'$GPGSV','GSV',20,'Detailed GPS satellite information such as azimuth and elevation of each satellite being tracked. '
+'$PGRMZ','PgrmZ',4, 'map datum'
+'$PGRMM','PgrmM',4, 'altitude'
+'\x02z','AV400',13, 'garmin aviation 400 sentences'
+'@21','text', 55, '?'
+'@RPY', 'RPY', 16, 'roll, pitch, yaw'
