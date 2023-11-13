@@ -14,10 +14,6 @@
 
 # pylint: disable=too-few-public-methods
 
-# +--------------------------+
-# | Version 2.0 Beta 1       |
-# +--------------------------+
-
 #from _typeshed import NoneType
 import os
 import sys
@@ -27,17 +23,9 @@ import sys
 
 # host_chk()  # Check the OS of a host PC and add search path for CIRCUITPY disk accordingly
 
-# +--------------------------+
-# | Imports for LED control  |
-# +--------------------------+
-
 import board
 import neopixel
 import digitalio
-
-# +----------------------------------+
-# | Imports for TFT display control  |
-# +----------------------------------+
 
 import adafruit_gfx
 from adafruit_display_text import label
@@ -46,42 +34,18 @@ from adafruit_display_text import label
 from lib.adafruit_ili9341 import ili9341    # has as only font file: 'gfx_standard_font_01'
 #from adafruit_bitmap_font import bitmap_font
 
-
 import displayio
 from busdisplay import BusDisplay as display
 import fourwire
 import terminalio
 import json
-
-# +-----------------------------+
-# | Imports for creating arrays |
-# +-----------------------------+
-
 from array import array
-
-# +-----------------------------+
-# | Imports for dictionaries    |
-# +-----------------------------+
-
-# +-----------------------------+
-# | Imports for debugging       |
-# +-----------------------------+
 
 # import pdb; pdb.set_trace()  # REPL answered: no module named 'pdb'
 
-# +-------------------+
-# | Imports for UART  |
-# +-------------------+
-
 import busio
-
-# +---------------------------+
-
 import time
 
-# +---------------------------+
-# | Other imports             |
-# +---------------------------+
 import adafruit_ntp
 import binascii
 import struct
@@ -89,26 +53,16 @@ import struct
 # import tft_defs  # tft definitions, originally in this script, however not used in this moment
 
 # +-----------------------------+
-# | General flags               |
-# +-----------------------------+
-
-# Moved to State Class. my_debug = False  # Show debug information
-# Moved to State Class. lOnREPL = True  # Show certain text on the REPL window
-# Moved to State Class. use_TAG = True 
-# Moved to State Class. use_wifi = False 
-
-# +-----------------------------+
 # | COM port definition         |
-# | (is just informative        |
+# | (is just informative)       |
 # | Port subject to change in   |
 # | MS Windows 10 O.S.          |
 # | ATTENTION:                  |
 # | Set COM port in FSUIPC7     |
 # | GPSout1 accoridingly        |
+# | See config.json             |
+# | and: state.globCOMprt.add() |
 # +-----------------------------+
-
-# Moved to State Class. globCOMprt = 'COM17'
-# Also put in file config.json
 
 class State:
     def __init__(self, saved_state_json=None):
@@ -208,9 +162,6 @@ state = State()
 
 state.board_id = board.board_id
 
-# +--------------------------+
-# | Imports WiFi             |
-# +--------------------------+
 if state.use_wifi:
     import wifi
     import ipaddress
@@ -343,17 +294,10 @@ max_inner_lp_cnt =  1  # | was 13 # | <<<------INNER LOOP COUNT ----( 1 GPS sent
 if sys.version_info > (3,):
     long = int  # See the notation: '1000L' below at line 634
 
-# +----------------------------------------+
-# | (global) encoding language definition  |
-# +----------------------------------------+
-line_count = 0
-lSerial2OK = 0  # ck_serial() result flag
 lstop = 0
 
 msg_elements = []
 NoPrintMsg = "will not be shown because of status \"False\"\nof one of the flags: \"first_part\", \"second_part\" or \"third_part\"\n"
-
-STX_cnt = 0
 
 # Copied from: I:\PaulskPt\ESP32-S3-Box_MSFS2020_GPSout_GPRMC_and_GPGGA\Examples\version_3\code.py
 # Buffers
@@ -364,23 +308,13 @@ rx_buffer = bytearray(rx_buffer_len * b'\x00')
 # |GPRMC_Dict Dictionary        |
 # | and associated definitions  |
 # +-----------------------------+
-
 csv_name = ''
 
-
 """ Class RMA (live example from MSFS2020 on 2021-020-02): ' $GPRMA,A,3609.0915,N,00520.4463,W,0.0,0.0,0.0,266.6,2.1,W*70' """
-
-# +--------------------+
-# | Definition Buffers |
-# +--------------------+
-
-line2 = bytearray(64)  # char Used in the blink-the-led part
 
 # +---------------------------+
 # | End of global Definitions |
 # +---------------------------+
-
-
 
 # +--------------------+
 # | Start of functions |
@@ -468,7 +402,8 @@ def read_fm_config(state):
             if k == "tmzone":
                 state.tm_tmzone = v
     if state.my_debug:
-        print(TAG+f"for check:\n\tstate.COUNTRY: \'{state.COUNTRY}\', state.STATE: \'{state.STATE}\', state.UTC_OFFSET: {state.UTC_OFFSET}, state.tm_tmzone: \'{state.tm_tmzone}\'")
+        print(TAG+f"for check:\n\tstate.COUNTRY: \'{state.COUNTRY}\', state.STATE: \'{state.STATE}\', \
+            state.UTC_OFFSET: {state.UTC_OFFSET}, state.tm_tmzone: \'{state.tm_tmzone}\'")
 
 save_config(state)
 
