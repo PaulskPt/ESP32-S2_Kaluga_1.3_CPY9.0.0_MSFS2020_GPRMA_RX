@@ -63,8 +63,6 @@ from array import array
 # | Imports for dictionaries    |
 # +-----------------------------+
 
-
-
 # +-----------------------------+
 # | Imports for debugging       |
 # +-----------------------------+
@@ -87,6 +85,8 @@ import time
 import adafruit_ntp
 import binascii
 import struct
+
+# import tft_defs  # tft definitions, originally in this script, however not used in this moment
 
 # +-----------------------------+
 # | General flags               |
@@ -148,8 +148,22 @@ class State:
         self.lon_lbl = None 
         self.gs_lbl = None 
         self.crs_lbl = None
+        self.HIGH = 1
+        self.LOW = 0
+        self.led_state = self.HIGH  # idem. When HIGH the LED is OFF
+        self.led_colors_dict = {
+            'green' : 0,
+            'red' : 1,
+            'blue' : 2,
+            'white' : 3,
+            'off' : 4 }
+        self.bril = 50  # Brilliance LED. Was: 20
+        self.bril_dim = 5  # Dimmed brilliance LED (e.g. for White color)
+        #                GREEN          RED           BLUE                  WHITE                   OFF
+        self.color_c_arr = [(0, self.bril, 0), (self.bril, 0, 0), (0, 0, self.bril), (self.bril_dim, self.bril_dim, self.bril_dim), (0, 0, 0)]
         self.use_neopixel = True
-        self.neopixel_brightness = None
+        self.neopixel_brightness = 0.5
+        self.num_pixels = 1  # The number of NeoPixels
         self.neopixel_dict = {
             "BLK": (0, 0, 0),
             "RED": (200, 0, 0),
@@ -186,7 +200,6 @@ class State:
         self.o_data = b''
         self.lOnREPL = True
         self.lMsgOK = False
-        self.max_nr_of_messages = 255
         self.nr_of_msgs = 0
         self.msg_nr = 0
         self.previousMillis = 0
@@ -209,11 +222,6 @@ if state.use_wifi:
             
     pool = socketpool.SocketPool(wifi.radio)
     ntp = adafruit_ntp.NTP(pool, tz_offset=0)
-    
-# Moved to State Class. ip = None
-# Moved to State Class. s__ip = ""
-# Moved to State Class. ssid = None
-# Moved to State Class pw = None
 
 # +--------------------------+
 # | Disable USB Mass Storage |
@@ -221,15 +229,7 @@ if state.use_wifi:
 #import storage 
 #storage.disable_usb_drive()
 
-
 board_id = board.board_id
-
-# Moved to State Class. tag_le_max = 24
-
-# +------------------------------------------------+
-# | Definitions for the Kaluga-1 TFT display (SPI) |
-# +------------------------------------------------+
-# an SD Card uses the same gpio's as TFT display
 
 # Define ESP32 SPI pins to which the display is attached
 # tft_sck = board.IO19   <-- this one is connected to the USB-B breakout board
@@ -239,74 +239,15 @@ tft_sck = board.LCD_CLK  # SPI clock pin
 tft_miso = board.LCD_MISO  # SPI MISO
 tft_mosi = board.LCD_MOSI  # SPI MOSI
 tft_dc= board.LCD_D_C  # Display command/data pin
-
 tft_rst = board.LCD_RST # Display reset
 
-tft_tp_busy = board.LCD_TP_BUSY
-tft_tp_cs = board.LCD_TP_CS
-tft_tp_irq = board.LCD_TP_IRQ
-tft_tp_miso = board.LCD_TP_MISO
-tft_tp_mosi = board.LCD_TP_MOSI
-tft_tp_sck = board.LCD_TP_SCK
-
-# Touch definitions
-tft_TOUCH_TYPE_NONE = 0
-tft_TOUCH_TYPE_XPT2046 = 1
-tft_TOUCH_TYPE_STMPE610 = 2
-
-tft_TOUCH_BTN_1 = board.TOUCH1
-tft_TOUCH_BTN_2 = board.TOUCH2
-tft_TOUCH_BTN_3 = board.TOUCH3
-tft_TOUCH_BTN_4 = board.TOUCH4
-tft_TOUCH_BTN_5 = board.TOUCH5
-tft_TOUCH_BTN_6 = board.TOUCH7
-tft_TOUCH_BTN_7 = board.TOUCH8
-tft_TOUCH_BTN_8 = board.TOUCH9
-tft_TOUCH_BTN_9 = board.TOUCH10
-tft_TOUCH_BTN_10 = board.TOUCH11
-tft_TOUCH_BTN_11 = board.TOUCH12
-tft_TOUCH_BTN_12 = board.TOUCH13
-
 tft_bl_ctr = board.LCD_BL_CTR
-
 backlight = digitalio.DigitalInOut(board.LCD_BL_CTR)
 backlight.switch_to_output()
 backlight.value = True
 
-buttonA = digitalio.DigitalInOut(tft_TOUCH_BTN_1)
-buttonB = digitalio.DigitalInOut(tft_TOUCH_BTN_2)
-buttonA.switch_to_input()
-buttonB.switch_to_input()
-
 # Set this to 1 if you want to use touch sceen functions
-tft_USE_TOUCH = tft_TOUCH_TYPE_NONE
-
-""" === Screen orientation constants === """
-# Definitions copied from tftspi.h (~/esp/projects_paul/esp32_tft_library/tft/include/tftspi.h)
-tft_PORTRAIT = 0
-tft_LANDSCAPE = 1
-tft_PORTRAIT_FLIP = 2
-tft_LANDSCAPE_FLIP = 3
-
-tft_CENTER = 0
-tft_LASTY = 0
-
-tft_DISP_TYPE_ILI9341 = 0
-tft_DISP_TYPE_ILI9488 = 1
-tft_DISP_TYPE_ST7789V = 2
-
-""" === Display type === """
-tft_DEFAULT_DISP_TYPE = tft_DISP_TYPE_ST7789V
-
-tft_DEFAULT_GAMMA_CURVE = 0
-tft_DEFAULT_FONT = 0
-
-""" === Display font definitions === """
-tft_font_rotate = 0
-tft_text_wrap = 0
-tft_font_transparent = 0
-tft_font_forceFixed = 0
-tft_gray_scale = 0
+tft_USE_TOUCH = False  # was: tft_TOUCH_TYPE_NONE
 
 # Release any resources currently in use for the displays
 displayio.release_displays()
@@ -343,127 +284,16 @@ state.crs_lbl = None
 # Create a bitmap 320 pixels wide, 240 pixels high, with each pixel having 3 possible values
 bitmap = displayio.Bitmap(320, 240, 3)
 
-"""
-    Note: the color values found on internet were 4 bytes behind '0x'. I added 2 MSB '00'
-    or in case of color WHITE 2 MSB 'FF'
-"""
-tft_colorsDict = { 'RED': 0xFF0000,
-    'GREEN': 0x00FF00,
-    'BLUE': 0x0000FF,
-    'WHITE': 0XFFFFFF,
-    'BLACK': 0x0000,
-    'NAVY': 0x000F,
-    'DARKGREEN': 0x0003E0,
-    'DARKCYAN': 0x0003EF,
-    'MAROON': 0x007800,
-    'PURPLE': 0x00780F,
-    'OLIVE': 0x007BE0,
-    'LIGHTGREY': 0x00C618,
-    'DARKGREY': 0x007BEF,
-    'CYAN': 0x0007FF,
-    'MAGENTA': 0x00F81F,
-    'YELLOW': 0x00FFE0,
-    'ORANGE': 0x00FD20,
-    'GREENYELLOW': 0x00AFE5,
-    'PINK': 0x00F81F, }
-
-"""
-'BLUE': 0x00001F,
-'GREEN': 0x0007E0,
-'RED': 0x00F800,
-'WHITE': 0xFFFFFF,
-"""
-
-tft_color_count = len(tft_colorsDict)
-
-palette = displayio.Palette(tft_color_count)
-
-palette[0] = tft_colorsDict['RED']
-palette[1] = tft_colorsDict['GREEN']
-palette[2] = tft_colorsDict['BLUE']
-palette[3] = tft_colorsDict['WHITE']
-
 # --- STATIC (not to be changed!) -------
 
 tft_name1 = "MSFS 2020"
 tft_name2 = "GPS data RX"
 
-# +--------------------------------------+
-# | TFT color definitions                |
-# +--------------------------------------+
-
-tft_GREEN = (0, 255, 0)
-tft_RED = (255, 0, 0)
-tft_BLUE = (0, 0, 255)
-tft_YELLOW = (255, 0, 255)  # Not sure if this is correct to get YELLOW. To check!
-tft_WHITE = (255, 255, 255)
-tft_BLACK = (0, 0, 0)
-
-# +--------------------------------------+
-# | Definitions for all LEDs             |
-# +--------------------------------------+
-
-led_colors_dict = {
-    'green' : 0,
-    'red' : 1,
-    'blue' : 2,
-    'white' : 3,
-    'off' : 4 }
-
-# +--------------------------------------+
-# | Definitions for external 3-color LED |
-# +--------------------------------------+
-
-led3_green = digitalio.DigitalInOut(board.IO35)
-led3_green.direction = digitalio.Direction.OUTPUT
-led3_red = digitalio.DigitalInOut(board.IO36)
-led3_red.direction = digitalio.Direction.OUTPUT
-led3_blue = digitalio.DigitalInOut(board.IO37)
-led3_blue.direction = digitalio.Direction.OUTPUT
-HIGH = 1
-LOW = 0
-led_interval = 1000
-led_state = HIGH  # idem. When HIGH the LED is OFF
-
-# +--------------------------------------+
-# | Definitions for builtin NeoPixel LED |
-# +--------------------------------------+
-
-color_t_arr = ["GREEN  ", "RED    ", "BLUE   ", "RAINBOW"]
-bril = 20  # Brilliance LED
-bril_dim = 5  # Dimmed brilliance LED (e.g. for White color)
-
-#                GREEN          RED           BLUE                  WHITE                   OFF
-
-color_c_arr = [(0, bril, 0), (bril, 0, 0), (0, 0, bril), (bril_dim, bril_dim, bril_dim), (0, 0, 0)]
-
-# +--------------------------------+
-# | Definition for modulo function |
-# +--------------------------------+
-
-my_mod = 4  # (See blink_led3() )
-
-# +--------------------------------------+
-# | Definition for the I2C character LCD |
-# +--------------------------------------+
-
-TFT_TXT_SIZE = 1;
-
-# +-----------------------------------------------+
-# | Hardware definitions for builtin NeoPixel LED |
-# +-----------------------------------------------+
-
 """
-For the ESP32-S2-Saloa-1R the builtin LED pin is 18
 for an ESP32-S2-Kaluga-1 the builtin LED pin is 45.
 """
-
 BUILTIN_LED = board.NEOPIXEL
 pixel_pin = board.NEOPIXEL
-
-# The number of NeoPixels
-
-num_pixels = 1
 
 """
 The order of the pixel colors - RGB or GRB.
@@ -475,8 +305,8 @@ ORDER = neopixel.GRB
 
 pixels = neopixel.NeoPixel(
     pixel_pin,
-    num_pixels,
-    brightness=0.2,
+    state.num_pixels,
+    brightness=state.neopixel_brightness,
     auto_write=False,
     pixel_order=ORDER
 )
@@ -545,11 +375,6 @@ csv_name = ''
 # +--------------------+
 
 line2 = bytearray(64)  # char Used in the blink-the-led part
-
-# Create the messages array. This array holds all received messages
-#messages = bytearray(state.max_msg_len)  # Creates bytearray(b'\x00\x00\x00\x00\x00...\x00')  18 bytes long
-
-messages = []  # Create a placeholder for a matrix (2-dimensional array). Will be filled in create_messages_buffer()
 
 # +---------------------------+
 # | End of global Definitions |
@@ -755,112 +580,6 @@ def do_connect(state):
     if state.ip:
         state.s__ip = str(state.ip)
 
-
-# for the time being and to avoid error messages, some dummy functions:
-def TFT_setGammaCurve():
-    pass
-
-"""
-def TFT_setRotation(rotation):
-    if rotation is None:
-        rotation = 0
-
-    if rotation >= 0 and rotation <= 3:
-        display.setRotation(rotation)
-"""
-def TFT_setFont(font, size):
-    """
-      Now only: gfx_standard_font_01.py
-      To return to the standard fixed-size font, call setFont(),
-      passing either NULL or no arguments:
-      Note: a handy tool for creating bitmap images: http://javl.github.io/image2cpp/
-    """
-    if size is None:
-        size = b'12pt6b'  # set default font size
-
-    if font is None:
-        display.setFont()  # Set the default font
-    else:
-        display.setFont(font, size)
-
-def TFT_resetFont():
-    display.setFont()  # This resets the font to default
-
-def TFT_print(txt):
-    print(txt, end='\n')
-
-
-"""
-    @brief
-    tft_test reports certain tests of the tft screen functionality.
-
-    param:  None
-
-    :returns: None
-"""
-def tft_test(state):
-    TAG = tag_adj(state, 'tft_test(): ')
-
-    # Extract from ili9341.h
-    ILI9341_RDMODE = 0x0A
-    ILI9341_RDMADCTL = 0x0B
-    ILI9341_RDPIXFMT = 0x0C
-    ILI9341_RDIMGFMT = 0x0D
-    ILI9341_RDSELFDIAG = 0x0F
-
-    # read diagnostics (optional but can help debug problems)
-    x = display.readcommand8(ILI9341_RDMODE)
-    print(TAG+"Display Power Mode: 0x", end ='')
-    print('{}'.format(hex(x)), end ='\n')
-    x = display.readcommand8(ILI9341_RDMADCTL, end ='')
-    print(TAG+"MADCTL Mode: 0x", end ='')
-    print('{}'.format(hex(x)), end ='\n')
-    x = display.readcommand8(ILI9341_RDPIXFMT, end ='')
-    print(TAG+"Pixel Format: 0x", end ='')
-    print('{}'.format(hex(x)), end ='\n')
-    x = display.readcommand8(ILI9341_RDIMGFMT, end ='')
-    print(TAG+"Image Format: 0x", end ='')
-    print('{}'.format(hex(x)), end ='\n')
-    x = display.readcommand8(ILI9341_RDSELFDIAG, end ='')
-    print(TAG+"Self Diagnostic: 0x", end ='')
-    print('{}'.format(hex(x)), end ='\n')
-
-    print("Benchmark                Time (microseconds)")
-    time.sleep(10)
-
-"""
-    @brief
-    tft_testText writes test texts to the tft screen.
-
-    param:  None
-
-    :returns: None
-"""
-def tft_testText():
-    global tft_miso, tft_mosi, tft_sck, tft_tp_cs, tft_colorsDict, TFT_TXT_SIZE
-    rot = 0
-
-    print("Pins used for TFT display: miso={}, mosi={}, sck={}, cs={}".format(tft_miso, tft_mosi, tft_sck, tft_tp_cs), end='\n')
-
-    if tft_USE_TOUCH > tft_TOUCH_TYPE_NONE:
-        print(" Touch CS: {}".format(tft_tp_cs), end='\n')
-
-    rot = display.getRotation()
-    display.fillScreen(tft_colorsDict['BLACK'])
-    TFT_TXT_SIZE = 1
-    display.setTextColor(tft_colorsDict['RED'])
-    display.setTextSize(TFT_TXT_SIZE)
-    print("Hello World!", end='\n')
-    TFT_TXT_SIZE += 1
-    display.setTextColor(tft_colorsDict['YELLOW'])
-    display.setTextSize(TFT_TXT_SIZE)
-    print(1234.56, end='\n')
-    if rot == 1 or rot == 3:
-        TFT_TXT_SIZE += 1
-    display.setTextColor(tft_colorsDict['RED'])
-    display.setTextSize( TFT_TXT_SIZE)
-
-
 def button_loop():
     global buttonA, buttonB, backlight, tft
     while True:
@@ -879,8 +598,7 @@ def button_loop():
     @brief
     Setup in fact performs the main task of this CircuitPython script.
     It consists of an outer loop and an inner loop.
-    Setup has one print-to-LCD section:
-    3) to print a selection of received messages to the character LCD:
+    Print the received GPS data to the display:
 
     param:  None
 
@@ -888,18 +606,15 @@ def button_loop():
     :rtype: boolean
 """
 def loop(state):
-    global max_outer_lp_cnt, max_inner_lp_cnt, lstop, led_state, led_interval, messages
+    global max_outer_lp_cnt, max_inner_lp_cnt, lstop
 
     TAG = tag_adj(state, "loop(): ")
 
     outer_lp_cnt = 0  # Set the initial value of the outer_lp_cnt
-    msg_lp_cnt = 0  # Set the initial value of the inner (msg_lp_cnt) loop, the messages collecting loop
+    msg_lp_cnt = 0  # Set the initial value of the inner (msg_lp_cnt) loop
     msg_data = None
 
-
     # currentMillis = millis() # (unsigned long)
-
-    currentMillis = time.monotonic()  # float (according to the CircuitPython Documentation)
 
     # a = LOW  # (int) When LOW, the LED will be ON.
 
@@ -925,11 +640,8 @@ def loop(state):
             print("\nStart of loop {}".format(outer_lp_cnt), end='\n')
             print("........................\n")
 
-        # Next line moved to setup() to create the messages buffer only once at startup, not here in the main loop
-        # create_messages_buffer()  # Create a two-dimensional array of bytearray() to store received messages
-
-        if led_state == HIGH:  # Switch off the builtin LED as well the external 3-color LED
-            led_toggle()
+        if state.led_state == state.HIGH:  # Switch off the builtin LED
+            led_toggle(state)
 
         if state.startup == -1:
 
@@ -945,7 +657,7 @@ def loop(state):
         wait_cnt = 0
         msg_lp_cnt = 0  # Reset msg_lp_cnt (inner loop count). We will do this loop 'max_inner_lp_cnt' times to catch a whole GPS sentences cycle
         while True:  # Entry of the inner loop
-
+            currentMillis = time.monotonic()  # float (according to the CircuitPython Documentation)
             msg_data = None  # Clear
 
             # +---------------------------------------+
@@ -959,24 +671,15 @@ def loop(state):
             if state.my_debug:
                 print(TAG+f"Message data is: {msg_data}", end='\n')
             if msg_data:
-
-                # print("type of rcvd data is: {}".format(type(msg_data)))  # Result: class <str>
-
-                if state.my_debug:
-                    print(TAG+"Adding a received message to the messages array", end='\n')
-                messages[state.msg_nr][0] = msg_data  # Add the received message to the messages array of bytearray()
+                # print(TAG+f"type of rcvd data is: {msg_data}")  # Result: class <str>
                 state.msg_nr += 1  # Increase the message index pointer
                 state.nr_of_msgs += 1  # Increase the number of messages counter
-
-                """
-                if nr_of_msgs >= max_outer_lp_cnt:
-                    # The create_message_buffer() function re-creates a 2-dimensional message array of max_outer_lp_cnt (32) * max_inner_lp_cnt (1)
-                    create_message_buffer()
-                    print("Messages buffer full. It will be purged and re-created now.", end='\n')
-                    break
-                # End of if msg_data:
-                """
-
+                
+                for _ in range(6):
+                    led_toggle(state)  # Switch external led opposite state
+                    time.sleep(0.2)
+                if state.led_state == state.HIGH:
+                    led_toggle(state)  # Switch the LEDs off
             else:
                 wait_cnt += 1  # Not receiving data yet...increase wait_cnt
                 if wait_cnt % 100 == 0 and state.my_debug:
@@ -989,21 +692,13 @@ def loop(state):
         # End of the inner loop
 
         # time.sleep(0.1)  # <--------------- DELAY ---------------
-
+        if state.my_debug:
+            print(TAG+f"state.nr_of_msgs: {state.nr_of_msgs}")
         if state.nr_of_msgs > 0:
-            if (currentMillis - state.previousMillis) >= led_interval:
-                state.previousMillis = currentMillis
-                for _ in range(6):
-                    led_toggle()  # Switch external led opposite state
-                    time.sleep(0.2)
-                if led_state == HIGH:
-                    led_toggle()  # Switch the LEDs off
-
             if third_part: # <<<---------- HERE STARTS THE THIRD PART ----------<<<
-
-                # +--------------------------------------------+
-                # | PRINT SELECTION OF MESSAGES TO THE DISPLAY |
-                # +--------------------------------------------+
+                # +----------------------------------------+
+                # | PRINT RECEIVED GPS DATA TO THE DISPLAY |
+                # +----------------------------------------+
                 pr_fs_data(state)
             else:
                 print("\n\nThe third part ", end='\n')
@@ -1036,8 +731,6 @@ def loop(state):
     # End of the outer loop
 
     # Do cleanup
-
-    messages = []  # Clean the messages array.
 
     # TODO
 
@@ -1916,50 +1609,6 @@ def pr_intro():
 
 """
     @ brief
-    This functions prints several lines of intro texts to the LCD
-
-    :param:  None
-
-    :returns: None
-"""
-def pr_intro_lcd():
-    global tft, color_c_arr
-
-    # Set the color of the builtin LED to black
-    color_c_arr[led_colors_dict['off']]
-    pixels.show()
-    blink_led3(led_colors_dict['off'])  # Switch external 3-color LED off
-
-    # Make the cursor visible as a line.
-
-    #display.fill(0)
-    time.sleep(2)
-
-    print("FSUIPC7 GPS msgs\n")
-
-    print("for MSFS2020\n")
-
-    print("via serial")
-
-    """
-    # Samples from learn.adafruit.com/adafruit-gfx-graphics-library/graphics-primitives
-    display.setTextColor(color);
-    display.etTextColor(color, backgroundcolor);
-    display.setTextSize(size);  # integer
-    display.setTextWrap(True);
-
-    After setting everything up, you can use print() or println() —
-    just like you do with Serial printing! For example, to print a string,
-    use print("Hello world") - that’s the first line of the image above.
-    You can also use print() for numbers and variables —
-    the second line above is the output ofprint(1234.56)
-    and the third line is print(0xDEADBEEF, HEX).
-    """
-    time.sleep(3)
-    # display.fill(0)
-
-"""
-    @ brief
     This functions prints several lines of explanatory texts
     in respect to the AV400 GPS sentences contents to the REPL window
 
@@ -1987,7 +1636,6 @@ def pr_heading(state):
         print()
         
 
-
 """
     @brief
     This function prints the received RMA/RMC type of GPS variant sentences
@@ -1995,7 +1643,7 @@ def pr_heading(state):
     This speeds up the presenting of the data. It makes viewing also more calm.
     Data will only be presented when new or updated. (The decision for this is
     made in the function ck_uart() ).
-    This function is once called from loop().
+    This function is called from loop().
     If there is no data received, ck_uart() will write
     'No data reception! ...' to the display. When new data is received after a 'no reception'
     period, the fixed text frame will be written to the LCD first.
@@ -2005,7 +1653,7 @@ def pr_heading(state):
     :returns: None
 """
 def pr_fs_data(state):
-    global main_group, fs_grp, messages, msg_elements
+    global main_group, fs_grp, msg_elements
     TAG = tag_adj(state, "pr_fs_data(): ")
 
     # +---------------------------------+
@@ -2029,6 +1677,11 @@ def pr_fs_data(state):
     # For GPRMC type of GPS message:
     # pos_utc = 1
     # pos_stat = 2
+    # pos_date = 9
+    # var = 10
+    # var_dir = 11
+    # mod_ind = 12
+    # chksum = 13
     
     if state.my_debug:
         print(TAG+f"state.gps_variant: {state.gps_variant}")
@@ -2052,24 +1705,7 @@ def pr_fs_data(state):
         sMemLon = sMemLat = sMemGs = sMemTt = ''
         nGs = nCrs = 0
 
-    #pos_date = 9
-    #var = 10
-    #var_dir = 11
-    #mod_ind = 12
-    #chksum = 13
-    #crlf = 14
-
     #qth_long = qth_lat = False  # GPS sentence aircraft position (Lat, Long) flags
-
-    this_msg = None
-    le_this_msg = 0
-    t = tt = None
-
-    #tmp_row = 0
-    #tft_cur_curpos = (display.getCursorX(), display.getCursorY())  # Get the current cursor pos  2-tuple (col, row)
-
-    msg = 0  # Message index
-    this_msg_nr = 0
 
     if state.my_debug:
         print(TAG+f"lGPSvarType is: {sGPSvarType}", end='\n')
@@ -2077,31 +1713,6 @@ def pr_fs_data(state):
         print(TAG+f"Current GPS variant being received: {sGPSvarType}, belongs to GPRMAgroup?: {state.lGPSgroup}", end='\n')
 
         print("\n"+TAG+f"Nr of {sGPSvarType} GPS messages received: {nr_of_msgs}.\nOnly some of them will be shown on display.", end='\n')
-        
-    """
-    for msg in range(1):  # (nr_of_msgs): # Traverse the received serie of messages
-        t = messages[msg][0]
-        tt = type(t)
-        this_msg_nr += 1  # Increase the message number (make it base 1)
-        if state.my_debug:
-            print(f"type(t) is: {tt}, value: \'{t}\'", end='\n')
-        if isinstance(t, bytearray):
-            t2 = t.decode(state.encoding)
-        elif isinstance(t, str):
-            t2 = t
-        this_msg = stripCRLF(state, t2)  # Decode and then strip occurrances of CR, LF, EOT or CRLF character codes
-
-        le_this_msg = len(this_msg)
-
-        if state.my_debug:
-            print("\n"+TAG+f"The message to be shown on LCD is: \'{this_msg}\'", end='\n')
-            print("and its length is: {}".format(le_this_msg), end='\n')
-    """
-
-    # HERE WAS INITIALLY THE display.setCursor(...) (NOW above, outside the for...loop) <<<---------------------<<<
-    # Handle messages like the following GPS sentence variant:
-    # Message example: $GPRMC,144554.00,A,3609.0916,N,00520.4466,W,0.0,298.6,010221,2.1,W*5E"
-    # strip the message into elements
 
     le_elements = len(msg_elements)
     if state.lMsgOK and le_elements > 0:
@@ -2187,29 +1798,6 @@ def pr_fs_data(state):
     else:
         print(TAG+"Nr of msg_elements to print is {le_elements} so we exit this function.", end='\n')
 
-
-
-"""
-    @brief
-    This functions fills a two-dimensional array of bytearrays for messages received
-    `2-dimensiona-array`_.
-    .. _2-dimensional-array: https://stackoverflow.com/questions/6667201/how-to-define-a-two-dimensional-array
-
-    :param:  None
-
-    :returns: None
-"""
-def create_messages_buffer(state):
-    global messages, max_inner_lp_cnt
-    n = 0
-    rows = max_outer_lp_cnt  # max_outer_lp_cnt . Currently 32: range(32)
-    cols = state.max_msg_len       # in this moment 18 : range(18)
-
-    # Create space for max_inner_lp_cnt * state.max_msg_len = 32 X 18 = 576  bytes
-    messages = [[0 for x in range(rows)] for y in range(cols)]
-    #if state.my_debug:
-    #    print(f"create_messages_buffer(): messages; {messages}")
-    
 """
     @brief
     This functions toggles the builtin neopixel LED and and external connected 3-color LED
@@ -2218,57 +1806,20 @@ def create_messages_buffer(state):
 
     :returns: None
 """
-def led_toggle():
-    global led_state, HIGH, LOW, color_c_arr
+def led_toggle(state):
+    # uses state Class variable state.led_state
 
-    # uses global variable led_state
+    if state.led_state == state.HIGH:
+        state.led_state = state.LOW  # a=!a
+    elif state.led_state == state.LOW:
+        state.led_state = state.HIGH  # a=!a
 
-    if led_state == HIGH:
-        led_state = LOW  # a=!a
-    elif led_state == LOW:
-        led_state = HIGH  # a=!a
-
-    if led_state == LOW:
-        pixels[0] = color_c_arr[led_colors_dict['off']]  # Set the color of the builtin LED to black
+    if state.led_state == state.LOW:
+        pixels[0] = state.color_c_arr[state.led_colors_dict['off']]  # Set the color of the builtin LED to black
         pixels.show()
-        blink_led3(led_colors_dict['off'])  # Switch the external 3-color LED off
     else:
-        pixels[0] = color_c_arr[led_colors_dict['green']]  # Set the color of the builtin LED to GREEN
+        pixels[0] = state.color_c_arr[state.led_colors_dict['green']]  # Set the color of the builtin LED to GREEN
         pixels.show()
-        blink_led3(led_colors_dict['green']) # Switch the external 3-color LED GREEN
-
-"""
-    @brief
-    This function sets the external 3-color LED to a color
-
-    :param  i: is an index to the color
-    :type i: int
-
-    :returns: None
-"""
-def blink_led3(i):
-    if i == led_colors_dict['green']:  # --- Green LED on ---
-        led3_green.value = True
-        led3_red.value = False
-        led3_blue.value = False
-    elif i == led_colors_dict['blue']:  # --- Red LED on ---
-        led3_green.value = False
-        led3_red.value = True
-        led3_blue.value = False
-    elif i == led_colors_dict['red']:  # --- Blue LED on ---
-        led3_green.value = False
-        led3_red.value = False
-        led3_blue.value = True
-    elif i == led_colors_dict['white']:  # --- All three LEDs on (= White) ---
-        led3_green.value = True
-        led3_red.value = True
-        led3_blue.value = True
-    elif i == led_colors_dict['off']:  # --- All three LEDs off (= Black) ---
-        led3_green.value = False
-        led3_red.value = False
-        led3_blue.value = False
-    else:
-        return  # Do nothing if value out of range
 
 """
     @brief
@@ -2338,7 +1889,7 @@ def show_terminal():
     :returns: void
 """
 def setup(state):
-    global uart
+    # global uart
     TAG = tag_adj(state, "setup(): ")
     
     read_fm_config(state)
@@ -2362,8 +1913,6 @@ def setup(state):
     state.GlobalGPSvariantID = ''
     state.lGlobalGPSvariantDictIsSet = False  # An important flag (!)
 
-    create_messages_buffer(state)  # Create a two-dimensional array of bytearray() to store received messages
-
     # Contents of gprmc2.csv:
     # ('id',0),('utc',1),('stat',2),('lat',3),('lat_ns',4),('lon',5),('lon_ew',6), \
     # ('gs',7),('trktrue',8),('ddmmyy',9),('var',10),('var_ew_and_mode_ind_and_chksum',11)
@@ -2385,12 +1934,11 @@ def setup(state):
     dummyDict = {}
 
     # +--------------------+
-    # | TFT setup          |
+    # | Display setup      |
     # + -------------------+
-    palette = displayio.Palette(3)
+    # palette = displayio.Palette(3)  # Not used in this moment
 
     bitmap[23,42] = 2  # This is how you would set the pixel at (x,y) = (23,42) to a value of 2
-
 
     # ====================================================================
     # === Pins MUST be initialized before SPI interface initialization ===
@@ -2403,31 +1951,6 @@ def setup(state):
     # | * SPI interface must already be setup                                       |
     # | * tft_disp_type', 'COLOR_BITS', '_width', '_height' variables must be set   |
     # ------------------------------------------------------------------------------+
-
-    tft_CENTER = 0
-    tft_LASTY = 0
-    tft_DEFAULT_FONT = 0
-    tft_DEFAULT_GAMMA_CURVE = 0
-    tft_PORTRAIT = 0
-
-    tft_font_rotate = 0
-    tft_text_wrap = 0
-    tft_font_transparent = 0
-    tft_font_forceFixed = 0
-    tft_gray_scale = 0
-
-    #TFT_setGammaCurve() # tft_DEFAULT_GAMMA_CURVE)
-    #TFT_setRotation(tft_PORTRAIT)
-    #TFT_setFont(tft_DEFAULT_FONT, None)
-    tft_fg = tft_YELLOW
-
-
-    # --------------------------------------------------------
-
-    #display.fill(color565(0xff, 0x11, 0x22))
-    #display.pixel(120, 160, 0)
-
-    #display.text("Connecting to WiFi", tft_CENTER, tft_LASTY + TFT_getfontheight()+2)
 
     print(tft_name1)
     print(tft_name2)
@@ -2445,20 +1968,13 @@ def setup(state):
     # (COMport depends on MS Windows 10 system. Can change!)
 
     time.sleep(1)
-
-    dts = 20*' '
     print()
     print("CircuitPython MSFS2020 GPS sentences data reception decoder by @paulsk (Discord.com Adafruit/CiruitPython). ", end='\n')
 
     #print("{}".format(dts))
     #print("\nNumber of loops in this run: {}".format(max_outer_lp_cnt))
-
-
     #print(dts)
 
-# +-------------------+
-# | Function main()   |
-# +-------------------+
 """
     @brief
     This is the start function
@@ -2486,7 +2002,6 @@ def main():
             print(TAG+"displayio test in Circuitpython V9.0.0-alpha.2")
             print(TAG+f"board: \'{state.board_id}\'")
             lStart = False
-        #pr_intro_lcd()
         lStop = loop(state)
         if lStop:
             print(TAG+f"loop() returned stop. Loop_nr: {loop_nr-1}. Exiting...", end='\n')
@@ -2509,8 +2024,6 @@ def main():
 # +------------------------------+
 # | Call to the main() function  |
 # +------------------------------+
-
-
 if __name__ == '__main__':
     main()
 
