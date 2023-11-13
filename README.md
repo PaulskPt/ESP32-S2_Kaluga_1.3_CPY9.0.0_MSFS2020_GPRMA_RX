@@ -23,5 +23,6 @@ of the PC to the Adafruit CP2102 USB-to-RS232 converter.
 ## ToDo
 
 The intention is to add WiFi connection and retrieve datetime stamps from an NTP server to update the internal RTC.
+WiFi communication is already prepared in the current script.
 
 
