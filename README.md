@@ -20,6 +20,10 @@ As the script is now, it is running flawlessly more than two hourse, receiving, 
 Flightsimulator 2020. The add-on "FSUIPC7" is used to send the GPS data via a COM-port (see "globCOMprt":"com17" in settings.toml) 
 of the PC to the Adafruit CP2102 USB-to-RS232 converter.
 
+## Debug info
+The State Class has the attribute my_deug. If this boolean variable is set to True, the script will print a lot of
+info to the REPL screen.
+
 ## ToDo
 
 The intention is to add WiFi connection and retrieve datetime stamps from an NTP server to update the internal RTC.
