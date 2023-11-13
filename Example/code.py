@@ -3,11 +3,14 @@
 #
 # SPDX-License-Identifier: MIT
 # ===============================================
-# ESP32-S2-GPS_sentences_via_Serial_GPRMA_GPRMC
-# for use with a Kaluga-1 dev board
+# Microsoft Flightsimulator 2020
+# GPS_sentences GPRMA, GPRMC or GPGGA rx
+# Received via UART (Serial)
+# Board: ESP32-S2 Kaluga-1.3
+# flashed with Circuitpython V9.0.0-alpha.2
 # ===============================================
 
-"""Main script to receive, decode and present FS2020 FSUIPC7 GPSout2 data"""
+"""Main script to receive, decode and display MSFS2020 + FSUIPC7 GPSout2 data"""
 
 #from docutils import nodes
 #from docutils.parsers.rst import Directive
@@ -60,7 +63,7 @@ import struct
 # | ATTENTION:                  |
 # | Set COM port in FSUIPC7     |
 # | GPSout1 accoridingly        |
-# | See config.json             |
+# | See: config.json            |
 # | and: state.globCOMprt.add() |
 # +-----------------------------+
 
@@ -625,13 +628,11 @@ def loop(state):
                 print("\n\nThe third part ", end='\n')
                 print(NoPrintMsg, end='\n')  # will not be shown here because of the status \"0\" of one of the flags (see global definitions)
 
-        # End if (nr_of_msgs > 0)
-
         if state.lOnREPL:
             print("\nEnd of loop {}".format(outer_lp_cnt), end='\n')
 
-        #t = 24 * " "
-        #print("{}".format(t), end="\n")
+        # t = 24 * " "
+        #print(f"{t}", end="\n")
 
         outer_lp_cnt += 1  # Increase the outer loop count
 
@@ -658,8 +659,6 @@ def loop(state):
     # time.sleep(0.5)  # <--------------- DELAY ---------------
 
     return lStop
-
-# End of setUp()
 
 """
     @ brief
@@ -991,14 +990,7 @@ def ck_variant(state, data):
                 print(TAG+f"ck_key(state, k) returned: value of key k: \'{k}\'", end='\n')
             if len(k) == 0:
                 return {}  # return empty dict
-        """
-        if state.gps_variant == "GPRMA":
-            d = state.GPRMA_Dict
-        elif state.gps_variant == "GPRMC":
-            d = state.GPRMC_Dict
-        else:
-            d = {}
-        """ 
+
         d = state.GPSvariantsDict
 
         if state.my_debug:
@@ -1096,12 +1088,6 @@ def get_GPSvariantValue(state, k):
     # When set (by ck_variant() at startup of this script) it should containt some ID like: '$GPRMA' (type 'str')
     if state.my_debug:
         print(TAG+f"state.gps_variant: {state.gps_variant}")
-    """
-    if state.gps_variant == "GPRMA":
-        d = state.GPRMA_Dict
-    elif state.gps_variant == "GPRMC":
-        d = state.GPRMC_Dict
-    """
     d = state.GPSvariantsDict  # set in setup_GPS_main_dict()
     if state.my_debug:
         print(TAG+f"value of parameter k is: \'{k}\'", end='\n')
@@ -1194,7 +1180,6 @@ def csv_read(state, f_name):
     csv_name = f_name # Copy the filename to the global var
 
     # Open and read a list of tuples from the csv file
-
     try:
         f = open(csv_name, 'r')
         line = f.read()  # NOTE: Tuples is a string!!!
@@ -1345,8 +1330,6 @@ def conv_it(state, s):  # -> t   (list of tuples)
     end = 0
     # print("contents s2 is: {}".format(s2), end='\n\n')
     # print("type(tuples) is: {}, contents t is: {}".format(type(tuples), tuples), end='\n')
-    lst1 = lst2 = []
-    
     # see: https://stackoverflow.com/questions/7558908/unpacking-a-list-tuple-of-pairs-into-two-lists-tuples
     if isinstance(s, str):
         if state.my_debug:
@@ -1372,7 +1355,7 @@ def conv_it(state, s):  # -> t   (list of tuples)
                         end = idx
                     elif _ == le:
                         start = idx+1
-                        end = len(s) -4
+                        end = len(s) -4  # 2 for ',)' and 2 for CRLF
                         
                     s2 = s[start:end]
                     if state.my_debug:
@@ -1528,7 +1511,7 @@ def pr_intro():
 """
     @brief
     This function prints the received RMA/RMC type of GPS variant sentences
-    to the display. A frame is already shown on the display.
+    to the display.
     This speeds up the presenting of the data. It makes viewing also more calm.
     Data will only be presented when new or updated. (The decision for this is
     made in the function ck_uart() ).
@@ -1613,14 +1596,7 @@ def pr_fs_data(state):
         #           2      4      8              9
         # text1 = ['LAT', 'LON', 'GS       KTS', 'CRS      DEGS']    (= global variable)
         le = len(state.text1)
-        
-        """
-        lat_lbl.text = ""
-        lon_lbl.text = ""
-        gs_lbl.text = ""
-        crs_lbl.text = ""
-        """
-        
+
         degree_sign = '.'  # u'\xb0'
 
         # Handle LAT
@@ -1833,14 +1809,6 @@ def setup(state):
     # === Pins MUST be initialized before SPI interface initialization ===
     # ====================================================================
 
-    # ------------------------------------------------------------------------------+
-    # | Perform display initialization sequence                                     |
-    # | Sets orientation to landscape; clears the screen                            |
-    # | * All pins must be configured                                               |
-    # | * SPI interface must already be setup                                       |
-    # | * tft_disp_type', 'COLOR_BITS', '_width', '_height' variables must be set   |
-    # ------------------------------------------------------------------------------+
-
     print(tft_name1)
     print(tft_name2)
 
@@ -1881,11 +1849,9 @@ def main():
 
     time.sleep(5)  # wait for mu-editor is set for REPL output
     setup(state)  # Perform setup
-
     pr_title_scrn()
     time.sleep(wait)
-    # pr_frame()
-    # time.sleep(wait)
+
     while True:
         if lStart:
             print(TAG+"displayio test in Circuitpython V9.0.0-alpha.2")
