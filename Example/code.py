@@ -3,7 +3,8 @@
 #
 # SPDX-License-Identifier: MIT
 # ===============================================
-# Microsoft Flightsimulator 2020
+# This script is created to be used with:
+# Microsoft Flightsimulator 2020.
 # GPS_sentences GPRMA, GPRMC or GPGGA rx
 # Received via UART (Serial)
 # Board: ESP32-S2 Kaluga-1.3
