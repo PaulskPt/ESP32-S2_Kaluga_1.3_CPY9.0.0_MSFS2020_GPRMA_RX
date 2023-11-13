@@ -714,74 +714,6 @@ def ck_key(state, k):
     return retval
 
 """
-    @brief
-    This function creates a global dictionary with the name 'GPRMC_Dict'
-
-    :param:  fname
-    :type: str
-
-    :returns: None
-"""
-def setup_GPS_main_dict(state):
-    # Each entry of this dictionary contains the ID of the type
-    # of the GPS sentence, the name of the type,
-    # how many fields the type of GPS sentence has and a description.
-    # The description here is empty. The descriptions are in the file GPSvariants.csv
-    # and can be imported later.
-    
-    if state.gps_variant == "GPRMA":
-        state.GPSvariantsDict = state.GPRMA_Dict
-    elif state.gps_variant == "GPRMC":
-        state.GPSvariantsDict = state.GPRMC_Dict
-
-    if state.my_debug:
-        print(f"setup_GPS_main_dict(): contents of state.GPSvariantDict:\n{state.GPSvariantsDict}", end='\n')
-
-"""
-    @brief
-    This functions returns the value of GlobalGPSvariantDict['ID']
-    After a first GPS variant message is received, this value will be set accordingly.
-    So, this function shows the current GPS sentence variant being received.
-
-    :param:  key     e.g. 'type' or 'fields'
-    :type: key str
-
-    :returns: a GPSvariantType (eventually an empty string)
-    :rtype: str
-"""
-def get_GPSvariantValue(state, k):
-    global GlobalGPSvariantDict
-    TAG = tag_adj(state, 'get_GPSvariantValue(): ')
-    retval = ''
-    # When initiated the GlobalGPSvariantDict contains: {'ID': '$GPRMC', 'type': 'RMC', 'fields': 12, 'descr': ''}
-    # When set (by ck_variant() at startup of this script) it should containt some ID like: '$GPRMA' (type 'str')
-    if state.my_debug:
-        print(TAG+f"state.gps_variant: {state.gps_variant}")
-    """
-    if state.gps_variant == "GPRMA":
-        d = state.GPRMA_Dict
-    elif state.gps_variant == "GPRMC":
-        d = state.GPRMC_Dict
-    """
-    d = state.GPSvariantsDict  # set in setup_GPS_main_dict()
-    if state.my_debug:
-        print(TAG+f"value of parameter k is: \'{k}\'", end='\n')
-        print(TAG+f"d: {d}")
-    
-    if k is not None and len(k) > 0:
-        if k in d[state.gps_variant]:  # was: if k in state.GlobalGPSvariantDict.keys():
-            retval = d[state.gps_variant][k]  # was: retval = state.GlobalGPSvariantDict[k]
-            if state.my_debug:
-                print(TAG+f"key \'{k}\' found in state.GPSvariantsDict[\'{state.gps_variant}\']: {d[state.gps_variant].keys()}. Value is: \'{retval}\'", end='\n')
-        else:
-            if state.my_debug:
-                tmp = d[state.gps_variant]
-                print(TAG+f"key \'{k}\' not found in state.GPSvariantsDict[{state.gps_variant}]: {tmp}", end='\n')
-    if state.my_debug:
-        print(TAG+f"return value is: \'{retval}\'", end='\n')
-    return retval
-
-"""
     @ brief
     This function checks if the ID of the message is the same as set globally
     Then it checks if the number of fields are as specified.
@@ -868,9 +800,6 @@ def ck_uart(state):  # returns an int
         print(TAG+f"bsrch_str: \'{bsrch_str}\', type(bsrch_str): {type(bsrch_str)}")
     le = 0
 
-    #GPS_variantDict = {}
-
-    u_data = None
     no_data_cnt = 0
     state.lMsgOK = False 
     lNoData = False
@@ -878,7 +807,6 @@ def ck_uart(state):  # returns an int
 
     if uart:
         while True:
-            #u_data = uart.readline()  # The data received is in 'bytes'
             rx_buffer = bytearray(rx_buffer_len * b'\x00')
             nr_bytes = uart.readinto(rx_buffer)
             if rx_buffer:
@@ -952,6 +880,75 @@ def ck_uart(state):  # returns an int
     if state.my_debug:
         print(TAG+"return value is: {}".format(s_rx_buffer), end='\n')
     return s_rx_buffer  # if no data return None
+
+
+"""
+    @brief
+    This function creates a global dictionary with the name 'GPRMC_Dict'
+
+    :param:  fname
+    :type: str
+
+    :returns: None
+"""
+def setup_GPS_main_dict(state):
+    # Each entry of this dictionary contains the ID of the type
+    # of the GPS sentence, the name of the type,
+    # how many fields the type of GPS sentence has and a description.
+    # The description here is empty. The descriptions are in the file GPSvariants.csv
+    # and can be imported later.
+    
+    if state.gps_variant == "GPRMA":
+        state.GPSvariantsDict = state.GPRMA_Dict
+    elif state.gps_variant == "GPRMC":
+        state.GPSvariantsDict = state.GPRMC_Dict
+
+    if state.my_debug:
+        print(f"setup_GPS_main_dict(): contents of state.GPSvariantDict:\n{state.GPSvariantsDict}", end='\n')
+
+"""
+    @brief
+    This functions returns the value of GlobalGPSvariantDict['ID']
+    After a first GPS variant message is received, this value will be set accordingly.
+    So, this function shows the current GPS sentence variant being received.
+
+    :param:  key     e.g. 'type' or 'fields'
+    :type: key str
+
+    :returns: a GPSvariantType (eventually an empty string)
+    :rtype: str
+"""
+def get_GPSvariantValue(state, k):
+    global GlobalGPSvariantDict
+    TAG = tag_adj(state, 'get_GPSvariantValue(): ')
+    retval = ''
+    # When initiated the GlobalGPSvariantDict contains: {'ID': '$GPRMC', 'type': 'RMC', 'fields': 12, 'descr': ''}
+    # When set (by ck_variant() at startup of this script) it should containt some ID like: '$GPRMA' (type 'str')
+    if state.my_debug:
+        print(TAG+f"state.gps_variant: {state.gps_variant}")
+    """
+    if state.gps_variant == "GPRMA":
+        d = state.GPRMA_Dict
+    elif state.gps_variant == "GPRMC":
+        d = state.GPRMC_Dict
+    """
+    d = state.GPSvariantsDict  # set in setup_GPS_main_dict()
+    if state.my_debug:
+        print(TAG+f"value of parameter k is: \'{k}\'", end='\n')
+        print(TAG+f"d: {d}")
+    
+    if k is not None and len(k) > 0:
+        if k in d[state.gps_variant]:  # was: if k in state.GlobalGPSvariantDict.keys():
+            retval = d[state.gps_variant][k]  # was: retval = state.GlobalGPSvariantDict[k]
+            if state.my_debug:
+                print(TAG+f"key \'{k}\' found in state.GPSvariantsDict[\'{state.gps_variant}\']: {d[state.gps_variant].keys()}. Value is: \'{retval}\'", end='\n')
+        else:
+            if state.my_debug:
+                tmp = d[state.gps_variant]
+                print(TAG+f"key \'{k}\' not found in state.GPSvariantsDict[{state.gps_variant}]: {tmp}", end='\n')
+    if state.my_debug:
+        print(TAG+f"return value is: \'{retval}\'", end='\n')
+    return retval
 
 """
     @ brief
