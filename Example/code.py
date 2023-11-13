@@ -156,6 +156,7 @@ class State:
         self.lMsgOK = False
         self.nr_of_msgs = 0
         self.msg_nr = 0
+        self.msg_elements = []
         self.previousMillis = 0
 
 state = State()
@@ -296,7 +297,6 @@ if sys.version_info > (3,):
 
 lstop = 0
 
-msg_elements = []
 NoPrintMsg = "will not be shown because of status \"False\"\nof one of the flags: \"first_part\", \"second_part\" or \"third_part\"\n"
 
 # Copied from: I:\PaulskPt\ESP32-S3-Box_MSFS2020_GPSout_GPRMC_and_GPGGA\Examples\version_3\code.py
@@ -515,20 +515,6 @@ def do_connect(state):
     if state.ip:
         state.s__ip = str(state.ip)
 
-def button_loop():
-    global buttonA, buttonB, backlight, tft
-    while True:
-        if buttonA.value and buttonB.value:
-            backlight.value = False  # turn off backlight
-        else:
-            backlight.value = True  # turn on backlight
-        if buttonB.value and not buttonA.value:  # just button A pressed
-            display.fill(display.color565(255, 0, 0))  # red
-        if buttonA.value and not buttonB.value:  # just button B pressed
-            display.fill(display.color565(0, 0, 255))  # blue
-        if not buttonA.value and not buttonB.value:  # none pressed
-            display.fill(display.color565(0, 255, 0))  # green
-
 """
     @brief
     Setup in fact performs the main task of this CircuitPython script.
@@ -725,7 +711,6 @@ def ck_key(state, k):
     :rtype: boolean
 """
 def ck_msg_validity(state, data):
-    global msg_elements, lMsgOK
     TAG = tag_adj(state, 'ck_msg_validity(): ')
     retval = False
     k = ''
@@ -764,7 +749,7 @@ def ck_msg_validity(state, data):
                     print(TAG+f"\'*\' found in elements[{le_elements-1}]: \'{elements[le_elements-1]}\'")
             if n1 >= 0 and n2 >= 0:
                 retval = True
-                msg_elements = elements
+                state.msg_elements = elements
                 state.lMsgOK = retval
         if state.my_debug:
             print(TAG+"return value: \'{}\'".format(retval), end='\n')
@@ -880,110 +865,6 @@ def ck_uart(state):  # returns an int
     if state.my_debug:
         print(TAG+"return value is: {}".format(s_rx_buffer), end='\n')
     return s_rx_buffer  # if no data return None
-
-
-"""
-    @brief
-    This function creates a global dictionary with the name 'GPRMC_Dict'
-
-    :param:  fname
-    :type: str
-
-    :returns: None
-"""
-def setup_GPS_main_dict(state):
-    # Each entry of this dictionary contains the ID of the type
-    # of the GPS sentence, the name of the type,
-    # how many fields the type of GPS sentence has and a description.
-    # The description here is empty. The descriptions are in the file GPSvariants.csv
-    # and can be imported later.
-    
-    if state.gps_variant == "GPRMA":
-        state.GPSvariantsDict = state.GPRMA_Dict
-    elif state.gps_variant == "GPRMC":
-        state.GPSvariantsDict = state.GPRMC_Dict
-
-    if state.my_debug:
-        print(f"setup_GPS_main_dict(): contents of state.GPSvariantDict:\n{state.GPSvariantsDict}", end='\n')
-
-"""
-    @brief
-    This functions returns the value of GlobalGPSvariantDict['ID']
-    After a first GPS variant message is received, this value will be set accordingly.
-    So, this function shows the current GPS sentence variant being received.
-
-    :param:  key     e.g. 'type' or 'fields'
-    :type: key str
-
-    :returns: a GPSvariantType (eventually an empty string)
-    :rtype: str
-"""
-def get_GPSvariantValue(state, k):
-    global GlobalGPSvariantDict
-    TAG = tag_adj(state, 'get_GPSvariantValue(): ')
-    retval = ''
-    # When initiated the GlobalGPSvariantDict contains: {'ID': '$GPRMC', 'type': 'RMC', 'fields': 12, 'descr': ''}
-    # When set (by ck_variant() at startup of this script) it should containt some ID like: '$GPRMA' (type 'str')
-    if state.my_debug:
-        print(TAG+f"state.gps_variant: {state.gps_variant}")
-    """
-    if state.gps_variant == "GPRMA":
-        d = state.GPRMA_Dict
-    elif state.gps_variant == "GPRMC":
-        d = state.GPRMC_Dict
-    """
-    d = state.GPSvariantsDict  # set in setup_GPS_main_dict()
-    if state.my_debug:
-        print(TAG+f"value of parameter k is: \'{k}\'", end='\n')
-        print(TAG+f"d: {d}")
-    
-    if k is not None and len(k) > 0:
-        if k in d[state.gps_variant]:  # was: if k in state.GlobalGPSvariantDict.keys():
-            retval = d[state.gps_variant][k]  # was: retval = state.GlobalGPSvariantDict[k]
-            if state.my_debug:
-                print(TAG+f"key \'{k}\' found in state.GPSvariantsDict[\'{state.gps_variant}\']: {d[state.gps_variant].keys()}. Value is: \'{retval}\'", end='\n')
-        else:
-            if state.my_debug:
-                tmp = d[state.gps_variant]
-                print(TAG+f"key \'{k}\' not found in state.GPSvariantsDict[{state.gps_variant}]: {tmp}", end='\n')
-    if state.my_debug:
-        print(TAG+f"return value is: \'{retval}\'", end='\n')
-    return retval
-
-"""
-    @ brief
-    This function splits the received string parameter 's' into a list of strings.
-    Optional 2nd parameter: a plit delimiter character. This parameter defaults to a comma character
-    If parameter 's' is None or type is str and length is 0, this function will return an empty list.
-    :param  s: str
-    :type s: str
-
-    :param s_schr: string containing a split delimiter character e.g.: ","
-    :type s_schr: str:
-
-    return: list of strings, e.g.: ['$GPRMC', '110517.00', 'A', '3609.0915', 'N', '00520.4464', 'W', '0.0', '259.4', '010221', '2.1', 'W*51\r\n']: rtype: list
-"""
-def split_in_elements(s, s_chr):
-    retval = []
-    delim = ','  # Default split delimiter character to comma
-    lDefault = False
-
-    if s is not None:  # Catch NoneType
-        if isinstance(s, str): # Catch non str type
-            if len(s) > 0:  # Catch empty str
-                if not s_chr is None:  # Catch NoneType
-                    if  isinstance(s_chr, str):  # Catch non str type
-                        if len(s_chr) == 0:  # Catch zero length
-                            lDefault = True
-                    else:
-                        lDefault = True
-                else:
-                    lDefault = True
-                if lDefault:
-                    s_chr = delim
-
-                retval = s.split(s_chr)
-    return retval
 
 """
     @ brief
@@ -1170,6 +1051,110 @@ def ck_variant(state, data):
     retval = state.GlobalGPSvariantDict
 
     return retval
+    
+"""
+    @brief
+    This function creates a global dictionary with the name 'GPRMC_Dict'
+
+    :param:  fname
+    :type: str
+
+    :returns: None
+"""
+def setup_GPS_main_dict(state):
+    # Each entry of this dictionary contains the ID of the type
+    # of the GPS sentence, the name of the type,
+    # how many fields the type of GPS sentence has and a description.
+    # The description here is empty. The descriptions are in the file GPSvariants.csv
+    # and can be imported later.
+    
+    if state.gps_variant == "GPRMA":
+        state.GPSvariantsDict = state.GPRMA_Dict
+    elif state.gps_variant == "GPRMC":
+        state.GPSvariantsDict = state.GPRMC_Dict
+
+    if state.my_debug:
+        print(f"setup_GPS_main_dict(): contents of state.GPSvariantDict:\n{state.GPSvariantsDict}", end='\n')
+
+"""
+    @brief
+    This functions returns the value of GlobalGPSvariantDict['ID']
+    After a first GPS variant message is received, this value will be set accordingly.
+    So, this function shows the current GPS sentence variant being received.
+
+    :param:  key     e.g. 'type' or 'fields'
+    :type: key str
+
+    :returns: a GPSvariantType (eventually an empty string)
+    :rtype: str
+"""
+def get_GPSvariantValue(state, k):
+    global GlobalGPSvariantDict
+    TAG = tag_adj(state, 'get_GPSvariantValue(): ')
+    retval = ''
+    # When initiated the GlobalGPSvariantDict contains: {'ID': '$GPRMC', 'type': 'RMC', 'fields': 12, 'descr': ''}
+    # When set (by ck_variant() at startup of this script) it should containt some ID like: '$GPRMA' (type 'str')
+    if state.my_debug:
+        print(TAG+f"state.gps_variant: {state.gps_variant}")
+    """
+    if state.gps_variant == "GPRMA":
+        d = state.GPRMA_Dict
+    elif state.gps_variant == "GPRMC":
+        d = state.GPRMC_Dict
+    """
+    d = state.GPSvariantsDict  # set in setup_GPS_main_dict()
+    if state.my_debug:
+        print(TAG+f"value of parameter k is: \'{k}\'", end='\n')
+        print(TAG+f"d: {d}")
+    
+    if k is not None and len(k) > 0:
+        if k in d[state.gps_variant]:  # was: if k in state.GlobalGPSvariantDict.keys():
+            retval = d[state.gps_variant][k]  # was: retval = state.GlobalGPSvariantDict[k]
+            if state.my_debug:
+                print(TAG+f"key \'{k}\' found in state.GPSvariantsDict[\'{state.gps_variant}\']: {d[state.gps_variant].keys()}. Value is: \'{retval}\'", end='\n')
+        else:
+            if state.my_debug:
+                tmp = d[state.gps_variant]
+                print(TAG+f"key \'{k}\' not found in state.GPSvariantsDict[{state.gps_variant}]: {tmp}", end='\n')
+    if state.my_debug:
+        print(TAG+f"return value is: \'{retval}\'", end='\n')
+    return retval
+
+"""
+    @ brief
+    This function splits the received string parameter 's' into a list of strings.
+    Optional 2nd parameter: a plit delimiter character. This parameter defaults to a comma character
+    If parameter 's' is None or type is str and length is 0, this function will return an empty list.
+    :param  s: str
+    :type s: str
+
+    :param s_schr: string containing a split delimiter character e.g.: ","
+    :type s_schr: str:
+
+    return: list of strings, e.g.: ['$GPRMC', '110517.00', 'A', '3609.0915', 'N', '00520.4464', 'W', '0.0', '259.4', '010221', '2.1', 'W*51\r\n']: rtype: list
+"""
+def split_in_elements(s, s_chr):
+    retval = []
+    delim = ','  # Default split delimiter character to comma
+    lDefault = False
+
+    if s is not None:  # Catch NoneType
+        if isinstance(s, str): # Catch non str type
+            if len(s) > 0:  # Catch empty str
+                if not s_chr is None:  # Catch NoneType
+                    if  isinstance(s_chr, str):  # Catch non str type
+                        if len(s_chr) == 0:  # Catch zero length
+                            lDefault = True
+                    else:
+                        lDefault = True
+                else:
+                    lDefault = True
+                if lDefault:
+                    s_chr = delim
+
+                retval = s.split(s_chr)
+    return retval
+
 
 """
 'FoamyGuy_CSV`_.
@@ -1539,34 +1524,6 @@ def pr_intro():
     print(f"to an Espressif ESP32-S2 Kaluga-1 microcontroller board, UART TXd ({my_UART_TX_pin}) - RXd ({my_UART_RX_pin}) data PINs.", end='\n')
     print("Starting to read the GPS data sentences:", end='\n\n')
 
-"""
-    @ brief
-    This functions prints several lines of explanatory texts
-    in respect to the AV400 GPS sentences contents to the REPL window
-
-    :param:  None
-
-    :returns: None
-
-"""
-def pr_heading(state):
-    global nr_of_msgs
-
-    # print("\nAV400 GPS sentence sequence{} follow below:".format('s' if nr_of_msgs > 1 else ''), end='\n') # using a ternary construction
-    if state.my_debug:
-        print("Sentence explanation:")
-        print("STX...(= Start of Text code)")
-        print("z... (followed by a 5-digit number CR LF")
-        print("A... Latitude (e.g. N 41 1431 CR LF")
-        print("B... Longitude (e.g. W 008 4049 CR LF")
-        print("C... Track (mag) in degrees CR LF")
-        print("D... ? CR LF")
-        print("E... ? CR LF")
-        print("GR.. ? CR LF Groundspeed(KTS)?")
-        print("...evt some other lines like 'IN100C', '000W' or 'KL0000'")
-        print("ETX..(= End of Text code -- Not alway seen in these sentences")
-        print()
-        
 
 """
     @brief
@@ -1585,7 +1542,7 @@ def pr_heading(state):
     :returns: None
 """
 def pr_fs_data(state):
-    global main_group, fs_grp, msg_elements
+    global main_group, fs_grp
     TAG = tag_adj(state, "pr_fs_data(): ")
 
     # +---------------------------------+
@@ -1644,13 +1601,13 @@ def pr_fs_data(state):
         print(TAG+f"lGPSvarList is: {lGPSvarList}", end='\n')
         print(TAG+f"Current GPS variant being received: {sGPSvarType}, belongs to GPRMAgroup?: {state.lGPSgroup}", end='\n')
 
-        print("\n"+TAG+f"Nr of {sGPSvarType} GPS messages received: {nr_of_msgs}.\nOnly some of them will be shown on display.", end='\n')
+        print("\n"+TAG+f"Nr of {sGPSvarType} GPS messages received: {state.nr_of_msgs}.\nOnly some of them will be shown on display.", end='\n')
 
-    le_elements = len(msg_elements)
+    le_elements = len(state.msg_elements)
     if state.lMsgOK and le_elements > 0:
         if state.my_debug:
             # print(TAG+f"type(le_elements) is: {type(le_elements)}, type(nr_of_fields) is: {type(nr_of_fields)}", end='\n')
-            print(TAG+f"msg_elements: {msg_elements}")
+            print(TAG+f"state.msg_elements: {state.msg_elements}")
 
         # In GPRMA the element nrs are:
         #           2      4      8              9
@@ -1667,14 +1624,14 @@ def pr_fs_data(state):
         degree_sign = '.'  # u'\xb0'
 
         # Handle LAT
-        if msg_elements[lat] != sMemLat:
-            sMemLat = msg_elements[lat]
+        if state.msg_elements[lat] != sMemLat:
+            sMemLat = state.msg_elements[lat]
             s0 = " {}{}{}\'{}\" {}".format(
-                msg_elements[lat][:2], \
+                state.msg_elements[lat][:2], \
                 degree_sign, \
-                msg_elements[lat][2:4], \
-                msg_elements[lat][5:], \
-                msg_elements[lat_ns])
+                state.msg_elements[lat][2:4], \
+                state.msg_elements[lat][5:], \
+                state.msg_elements[lat_ns])
             if state.my_debug:
                 print(TAG+f"state.text1[{0}]: {state.text1[0]}, s0: {s0}")
             state.lat_lbl.text = state.text1[0]+" "+s0
@@ -1682,14 +1639,14 @@ def pr_fs_data(state):
                 print(TAG+f"state.lat_lbl.text: {state.lat_lbl.text}")
 
         # Handle LON
-        if msg_elements[lon] != sMemLon:
-            sMemLon = msg_elements[lon]
+        if state.msg_elements[lon] != sMemLon:
+            sMemLon = state.msg_elements[lon]
             s1 = "{}{}{}\'{}\" {}".format(
-                msg_elements[lon][:3], \
+                state.msg_elements[lon][:3], \
                 degree_sign, \
-                msg_elements[lon][3:5], \
-                msg_elements[lon][6:], \
-                msg_elements[lon_ew])
+                state.msg_elements[lon][3:5], \
+                state.msg_elements[lon][6:], \
+                state.msg_elements[lon_ew])
             state.lon_lbl.text = state.text1[1]+" "+s1
             if state.my_debug:
                 print(TAG+f"state.text1[{1}]: {state.text1[1]}, s1: {s1}")
@@ -1697,9 +1654,9 @@ def pr_fs_data(state):
                print(TAG+f"state.lon_lbl.text: {state.lon_lbl.text}")
 
         # Handle GS
-        if msg_elements[gs] != sMemGs:
-            sMemGs = msg_elements[gs]
-            nGs = int(float(msg_elements[gs]))
+        if state.msg_elements[gs] != sMemGs:
+            sMemGs = state.msg_elements[gs]
+            nGs = int(float(state.msg_elements[gs]))
             s2 = "{:3d}".format(nGs)
             state.gs_lbl.text = state.text1[2][:2]+"  "+s2+" "+state.text1[2][-3:]
             if state.my_debug:
@@ -1708,9 +1665,9 @@ def pr_fs_data(state):
                 print(TAG+f"state.gs_lbl.text: {state.gs_lbl.text}")
 
         # Handle CRS
-        if msg_elements[crs] != sMemTt:
-            sMemTt = msg_elements[crs]
-            nCrs = int(float(msg_elements[crs]))
+        if state.msg_elements[crs] != sMemTt:
+            sMemTt = state.msg_elements[crs]
+            nCrs = int(float(state.msg_elements[crs]))
             s3 = "{:3d}".format(nCrs)
             state.crs_lbl.text = state.text1[3][:3]+" "+s3+" "+state.text1[3][-4:]
             if state.my_debug:
@@ -1728,7 +1685,7 @@ def pr_fs_data(state):
         #display.clear()
         #
     else:
-        print(TAG+"Nr of msg_elements to print is {le_elements} so we exit this function.", end='\n')
+        print(TAG+"Nr of state.msg_elements to print is {le_elements} so we exit this function.", end='\n')
 
 """
     @brief
