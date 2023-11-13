@@ -1,19 +1,17 @@
 
 ## MSFS2020 GPS data receiver
 
-Circutipython V9.0.0-alpha.2 example to use an Espressif ESP32-S2 Kaluga-1.3.
+Circutipython V9.0.0-alpha.2 example for an Espressif ESP32-S2 Kaluga-1.3.
 
 This is an ongoing project to display certain GPS position, groundspeed, direction of flight (and eventually: altitude) information,
-in this case to the display of the Espressif Kaluga-1.
+in this case to the display of the Espressif Kaluga-1.3 board.
 
 At startup, the script reads the contents of the files settings.toml, gprma2.csv and GPSvariants.csv.
 
 The script contains a State Class, that contains a lot of variables, lists, dictionaries, that initially were global variables.
 
-There are still a lot of global variables that have to do with the display. In future updates we assume to have less global variables.
-
-The script is now set up to receive, decode and display GPS messages of the type GPRMA. It can also receive, decode and display GPS messages
-of the type GPRMC and GPGGA, with some modifications of the script.
+The script is set up to receive, decode and display GPS messages of the type GPRMA. It can also receive, decode and display GPS messages
+of the type GPRMA, GPRMC and/or GPGGA, with some modifications of the script.
 
 Since this script is created from a copy of another similar project, still some cleaning up of code and variables have to be done.
 As the script is now, it is running flawlessly more than two hourse, receiving, decoding and displaying GPS data received from Microsoft
