@@ -20,6 +20,8 @@ As the script is now, it is running flawlessly more than two hourse, receiving, 
 Flightsimulator 2020. The add-on "FSUIPC7" is used to send the GPS data via a COM-port (see "globCOMprt":"com17" in settings.toml) 
 of the PC to the Adafruit CP2102 USB-to-RS232 converter.
 
+The built-in NEOPIXEL led will blink three times in color green when a GPS message has been received, checked and is ready to be displayed.
+
 ## Hardware
 
 Beside the Espressif ESP32-S2 Kaluga-1.3, to convert USB-to-RS232 serial data an Adafruit CP2102N Friend
