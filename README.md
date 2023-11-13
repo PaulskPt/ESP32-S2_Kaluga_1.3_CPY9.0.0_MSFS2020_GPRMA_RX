@@ -20,6 +20,11 @@ As the script is now, it is running flawlessly more than two hourse, receiving, 
 Flightsimulator 2020. The add-on "FSUIPC7" is used to send the GPS data via a COM-port (see "globCOMprt":"com17" in settings.toml) 
 of the PC to the Adafruit CP2102 USB-to-RS232 converter.
 
+## Hardware
+
+Beside the Espressif ESP32-S2 Kaluga-1.3, to convert USB-to-RS232 serial data an Adafruit CP2102N Friend
+- USB-UART CP2102N converter - USB-C socket - Adafruit 5335 board is used.
+
 ## Debug info
 The State Class has the attribute my_deug. If this boolean variable is set to True, the script will print a lot of
 info to the REPL screen.
